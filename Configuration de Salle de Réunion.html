@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Configurations de salle de réunion</title>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f4;--card:#fff;--ink:#12343b;--mut:#5b727a;--acc:#e0a458;--line:#cdd8dc;--room:#f6f9fa;--tb:#12343b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1b1f;--card:#16272c;--ink:#dbe9ec;--mut:#8fa6ad;--line:#2a3f45;--room:#1b3037;--tb:#8fb3bc;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1b1f;--card:#16272c;--ink:#dbe9ec;--mut:#8fa6ad;--line:#2a3f45;--room:#1b3037;--tb:#8fb3bc;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Schibsted Grotesk",system-ui,sans-serif;line-height:1.45}
+.wrap{max-width:1200px;margin:0 auto;padding:20px;display:grid;gap:20px}
+@media(min-width:900px){.wrap{grid-template-columns:300px 1fr;align-items:start}aside{position:sticky;top:16px}}
+h1{font-size:1.5rem;font-weight:800;margin:0 0 4px}
+.sub{color:var(--mut);margin:0 0 16px;font-size:.9rem}
+aside{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+fieldset{border:0;padding:0;margin:0 0 14px}
+legend{font-weight:600;margin-bottom:6px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{display:block;font-size:.8rem;color:var(--mut)}
+input,select,textarea{width:100%;font:inherit;font-size:1rem;padding:7px 8px;margin-top:2px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+input:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s, box-shadow .15s}
+.card:hover{border-color:var(--acc);box-shadow:0 4px 12px rgba(0,0,0,0.05)}
+.card.best{border:2px solid var(--acc)}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.head h2{font-size:1.05rem;margin:0;font-weight:600}
+.n{font-size:1.8rem;font-weight:800}
+.n small{font-size:.8rem;font-weight:400;color:var(--mut)}
+.meta{font-size:.8rem;color:var(--mut);margin:2px 0 8px;min-height:1.2em}
+svg{width:100%;height:auto;display:block;pointer-events:none}
+.room{fill:var(--room);stroke:var(--ink);stroke-width:.05}
+.ch{fill:var(--acc)}
+.tb{fill:var(--tb)}
+.lbl{fill:var(--mut);font-size:.45px}
+.tag{font-size:.75rem;background:var(--acc);color:#12343b;border-radius:4px;padding:1px 6px;font-weight:600}
+.hint{font-size:.8rem;color:var(--mut);margin-top:12px}
+button{font:inherit;font-size:.85rem;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--acc)}button:focus-visible{outline:2px solid var(--acc)}
+.ebtn{margin-top:10px;width:100%;font-weight:600}
+dialog{width:min(96vw,1000px);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.bar strong{margin-right:6px}.bar .sp{flex:1}.bar select{width:auto;margin:0;padding:5px 6px;font-size:.85rem}
+#edsvg svg{max-height:68vh;touch-action:none;pointer-events:auto}
+#edsvg .ch,#edsvg .tb,#edsvg .grp{cursor:grab}
+.fbtn{display:inline-block;margin:0;font-size:.85rem;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer}
+.sel{stroke:#e5484d;stroke-width:.06}
+.saves{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:14px;font-size:.9rem}
+.sv{display:inline-flex}.sv button:first-child{border-radius:6px 0 0 6px}.sv button:last-child{border-radius:0 6px 6px 0;border-left:0}
+@media print{.wrap,.saves{display:none!important}body{background:#fff}dialog{position:static;width:100%;border:0;color:#000;background:#fff}.bar button,.bar select,.bar input,.hint{display:none}.room{fill:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside>
+<h1>Plan de salle</h1>
+<p class="sub">Choisissez une salle ou entrez vos dimensions.</p>
+<fieldset><legend>Sélection de salle</legend>
+<select id="roomSelect">
+<option value="custom">-- Personnalisé --</option>
+<option value="opera">OPERA (130 m²)</option>
+<option value="bastille">BASTILLE (70 m²)</option>
+<option value="louvre">LOUVRE (30 m²)</option>
+<option value="concorde">CONCORDE (40 m²)</option>
+<option value="louvre_concorde">LOUVRE-CONCORDE (70 m²)</option>
+<option value="veranda">VERANDA (36 m²)</option>
+<option value="bercy">BERCY (44 m²)</option>
+<option value="luxemburg">LUXEMBURG (40 m²)</option>
+</select>
+</fieldset>
+<fieldset><legend>Salle</legend><div class="row">
+<label>Longueur (m)<input id="L" type="number" step="0.1" value="12" inputmode="decimal"></label>
+<label>Largeur (m)<input id="W" type="number" step="0.1" value="8" inputmode="decimal"></label>
+<label>Marge murs (cm)<input id="m" type="number" step="5" value="30" inputmode="decimal"></label>
+<label>Zone avant (cm)<input id="fz" type="number" step="10" value="100" inputmode="decimal"></label>
+</div></fieldset>
+<fieldset><legend>Chaise</legend><div class="row">
+<label>Largeur (cm)<input id="cw" type="number" step="1" value="48" inputmode="decimal"></label>
+<label>Profondeur (cm)<input id="cd" type="number" step="1" value="50" inputmode="decimal"></label>
+</div></fieldset>
+<fieldset><legend>Table utilisée</legend>
+<label>Dimensions (cm)<select id="tt"><option value="180x60">180 × 60</option><option value="120x60">120 × 60</option><option value="120x45">120 × 45</option><option value="180x45">180 × 45</option><option value="160x45">160 × 45</option></select></label>
+</fieldset>
+<fieldset><legend>Chaises par table</legend><div class="row"><label>Table 180<input id="s180" type="number" min="1" step="1" value="3" inputmode="numeric"></label><label>Table 160<input id="s160" type="number" min="1" step="1" value="3" inputmode="numeric"></label><label>Table 120<input id="s120" type="number" min="1" step="1" value="2" inputmode="numeric"></label></div></fieldset>
+<fieldset><legend>Rangs</legend><label>Nombre de rangs (vide = maximum)<input id="rg" type="number" min="1" step="1" placeholder="Maximum" inputmode="numeric"></label>
+<label style="margin-top:8px">Espace entre les rangs (cm, vide = standard)<input id="rs" type="number" min="0" step="5" placeholder="Standard" inputmode="decimal"></label></fieldset>
+<fieldset><legend>Circulation</legend>
+<label>Allée centrale (cm)<input id="a" type="number" step="5" value="90" inputmode="decimal"></label>
+</fieldset>
+<fieldset><legend>Disposition personnalisée</legend><label>Une ligne par rang<textarea id="cu" rows="4" style="margin-top:2px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);padding:7px 8px">180+120 | 120+120 | 180+120</textarea></label><p class="hint" style="margin:4px 0 0">Dans une ligne, séparez les groupes de tables par | et collez les tables d’un même groupe avec + (une virgule les écarte de 10 cm). Ajoutez @50 en fin de ligne pour fixer l’espace avant le rang suivant.</p></fieldset>
+<fieldset><legend>Îlots en bloc (salon)</legend><div class="row"><label>Nombre d’îlots<input id="ib_n" type="number" min="0" step="1" value="3" inputmode="numeric"></label><label>Rangées au centre<input id="ib_r" type="number" min="1" step="1" value="2" inputmode="numeric"></label></div>
+<label style="margin-top:6px">Table du centre<select id="ib_c"><option value="180x60">180 × 60</option><option value="120x60">120 × 60</option><option value="120x45">120 × 45</option><option value="180x45">180 × 45</option><option value="160x45">160 × 45</option></select></label>
+<div class="row" style="margin-top:6px"><label>Bout gauche<select id="ib_l"><option value="0">Aucune</option><option value="180x60">180 × 60</option><option value="120x60" selected>120 × 60</option><option value="120x45">120 × 45</option><option value="180x45">180 × 45</option><option value="160x45">160 × 45</option></select></label><label>Bout droit<select id="ib_e"><option value="0">Aucune</option><option value="180x60">180 × 60</option><option value="120x60" selected>120 × 60</option><option value="120x45">120 × 45</option><option value="180x45">180 × 45</option><option value="160x45">160 × 45</option></select></label></div>
+<div class="row" style="margin-top:6px"><label>En plus à gauche<input id="ib_lx" placeholder="ex. 120+120"></label><label>En plus à droite<input id="ib_ex" placeholder="ex. 120+120"></label></div>
+<p class="hint" style="margin:4px 0 0">Les tables des bouts s'alignent côte à côte le long de la hauteur pour former un T.</p></fieldset>
+<fieldset><legend>Îlots en ligne</legend><label>Une ligne par type d’îlot : nombre d’îlots : tables<textarea id="il" rows="3" style="margin-top:2px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);padding:7px 8px"></textarea></label><p class="hint" style="margin:4px 0 0">Exemples : 3 : 180+120 ; 4 : 8p</p></fieldset>
+<p class="hint">Le haut du plan correspond à l’avant de la salle (écran / orateur).</p>
+</aside>
+<main>
+<div id="info" class="sub"></div>
+<div id="saves" class="saves"></div>
+<div id="out" class="grid"></div>
+</main>
+</div>
+
+<dialog id="ed"><div class="bar"><strong id="edt"></strong><span id="edn"></span><span class="sp"></span>
+<button data-a="ch">+ Chaise</button><select id="edtt" aria-label="Taille de la table à ajouter"><option value="180x60">180 × 60</option><option value="120x60">120 × 60</option><option value="120x45">120 × 45</option><option value="180x45">180 × 45</option><option value="160x45">160 × 45</option></select><button data-a="tb">+ Table</button>
+<button data-a="multi" aria-pressed="false">Sélection multiple</button><button data-a="all">Tout sélectionner</button><button data-a="grp">Grouper</button><button data-a="ungrp">Dissocier</button><label style="display:inline-flex;gap:4px;align-items:center;font-size:.85rem;color:var(--ink)"><input id="snap" type="checkbox" checked style="width:auto;margin:0">Coller les tables</label><button data-a="rotl" title="Pivoter de 15° vers la gauche">↶ 15°</button><button data-a="rotr" title="Pivoter de 15° vers la droite">↷ 15°</button><button data-a="rot">Pivoter 90°</button><button data-a="dup">Dupliquer</button><button data-a="del">Supprimer</button><button data-a="reset">Réinitialiser</button><input id="edname" placeholder="Nom (ex. Séminaire A)" aria-label="Nom de la mise en place" style="width:11rem;margin:0;padding:5px 6px;font-size:.85rem"><button data-a="save">Sauvegarder</button><button data-a="dl">Télécharger</button><button data-a="png">Image PNG</button><label class="fbtn">Ouvrir un fichier<input id="edfile" type="file" accept=".html" hidden></label><button data-a="pr">Imprimer</button><button data-a="close">Fermer</button></div><div id="edmsg" class="hint" role="status" style="margin:0 0 8px;min-height:1.2em;color:var(--ink);font-weight:600"></div>
+<div id="edsvg"></div><p class="hint">Glissez un élément pour le déplacer. Maj + clic (ou Sélection multiple) permet de manipuler plusieurs éléments ensemble.</p></dialog>
+
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>{const x=parseFloat($(id).value);return isFinite(x)&&x>0?x:null};
+const f=x=>(+x).toFixed(3);
+const R=(x,y,w,h,c,rot)=>`<rect class="${c}" x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}"${rot?` transform="rotate(${rot} ${f(x+w/2)} ${f(y+h/2)})"`:""}/>`;
+const small=(n,msg)=>({n:0,s:"",note:msg||"Salle trop petite pour cette disposition"});
+
+const seatsOf=l=>{
+  const sMap = {180: $("s180").value, 160: $("s160").value, 120: $("s120").value};
+  const key = Math.round(l*100);
+  const val = sMap[key] !== undefined ? +sMap[key] : null;
+  if(val && val >= 1) return Math.floor(val);
+  return Math.max(1, Math.floor(l/.6));
+};
+
+const CH=(x,y,l,k,g)=>{let s="";for(let i=0;i<k;i++)s+=R(x+(i+.5)*l/k-(g.cw-.04)/2,y,g.cw-.04,g.cd-.04,"ch");return s};
+const parseTb=t=>{const p=t.trim().toLowerCase().replace("×","x").split("x"),L=parseFloat(p[0]),W=p[1]?parseFloat(p[1]):60;return L>0&&W>0?{l:L/100,w:W/100}:null};
+const CV=(x,y,l,k,g)=>{let s="";for(let i=0;i<k;i++)s+=R(x,y+(i+.5)*l/k-(g.cw-.04)/2,g.cd-.04,g.cw-.04,"ch");return s};
+
+function ilotsBloc(g){
+  const n=Math.floor(+$("ib_n").value)||0,c=parseTb($("ib_c").value),rows=Math.max(1,Math.floor(+$("ib_r").value)||1);
+  if(n<1||!c)return null;
+  const ext=t=>{const p=t.split(/([+,])/),o=[];for(let i=0;i<p.length;i+=2){const q=parseTb(p[i]);if(q)o.push(q)}return o};
+  const Ls=[...($("ib_l").value==="0"?[]:[parseTb($("ib_l").value)]),...ext($("ib_lx").value)],Rs=[...($("ib_e").value==="0"?[]:[parseTb($("ib_e").value)]),...ext($("ib_ex").value)];
+  const Dc=rows*c.w,kc=seatsOf(c.l);
+  
+  const hSum=arr=>arr.reduce((acc,t)=>acc+(t?t.l:0),0);
+  const wMax=arr=>arr.length?Math.max(...arr.map(t=>t?t.w:0)):0;
+  
+  const hlSum=hSum(Ls), hrSum=hSum(Rs);
+  const maxWl=wMax(Ls), maxWr=wMax(Rs);
+  
+  const kl=Ls.reduce((acc,t)=>acc+(t?seatsOf(t.l):0),0);
+  const kr=Rs.reduce((acc,t)=>acc+(t?seatsOf(t.l):0),0);
+  const P=2*kc+kl+kr;
+  
+  const cl=Ls.length?g.cd+.05:0, cr=Rs.length?g.cd+.05:0;
+  const W=cl+maxWl+c.l+maxWr+cr;
+  const H0=Math.max(Dc,hlSum,hrSum);
+  const D=H0+2*g.cd+.1;
+  
+  const per=Math.max(1,Math.floor((g.AW+g.a)/(W+g.a)));let s="",y=g.Y0;
+  for(let r=0;r*per<n;r++){const cnt=Math.min(per,n-r*per);let x=g.X0+(g.AW-(cnt*W+(cnt-1)*g.a))/2;
+    for(let i=0;i<cnt;i++){
+      const bx=x+cl+maxWl,top=y+g.cd+.05,by=top+(H0-Dc)/2;let h='<g class="grp">';
+      for(let j=0;j<rows;j++)h+=R(bx+.02,by+j*c.w+.02,c.l-.04,c.w-.04,"tb");
+      h+=CH(bx,by-g.cd+.02,c.l,kc,g)+CH(bx,by+Dc+.03,c.l,kc,g);
+      
+      if(Ls.length){
+        let curTy=top+(H0-hlSum)/2;
+        Ls.forEach(t=>{
+          if(!t)return;
+          const lx=bx-t.w;
+          h+=R(lx+.02,curTy+.02,t.w-.04,t.l-.04,"tb");
+          h+=CV(lx-g.cd+.02,curTy,t.l,seatsOf(t.l),g);
+          curTy+=t.l;
+        });
+      }
+      
+      if(Rs.length){
+        let curTy=top+(H0-hrSum)/2;
+        Rs.forEach(t=>{
+          if(!t)return;
+          const rx=bx+c.l;
+          h+=R(rx+.02,curTy+.02,t.w-.04,t.l-.04,"tb");
+          h+=CV(rx+t.w+.03,curTy,t.l,seatsOf(t.l),g);
+          curTy+=t.l;
+        });
+      }
+      
+      s+=h+"</g>";x+=W+g.a}
+    y+=D+g.a}
+  const over=[];if(W>g.AW+1e-6)over.push("largeur");if(y-g.a-g.Y0>g.AD+1e-6)over.push("profondeur");
+  return{n:n*P,s,note:`${n} îlot(s) de ${P} personnes`+(over.length?` ⚠ dépasse en ${over.join(" et ")}`:"")};
+}
+
+function ilots(g){
+  const isl=[];
+  $("il").value.split("\n").map(s=>s.trim()).filter(Boolean).forEach(l=>{
+    const c=l.split(":"),n=c.length>1?Math.max(1,parseInt(c[0])||1):1,txt=(c.length>1?c.slice(1).join(":"):l).trim(),pm=txt.match(/^(\d+)\s*p$/i),tabs=[];
+    if(pm){let p=+pm[1];const big=2*seatsOf(1.8),sm=2*seatsOf(1.2);while(p>0){if(p>sm){tabs.push({l:1.8,w:.6,gap:0});p-=big}else{tabs.push({l:1.2,w:.6,gap:0});p-=sm}}}
+    else{const p=txt.split(/([+,])/);for(let i=0;i<p.length;i+=2){const t=parseTb(p[i]);if(t){t.gap=i&&p[i-1]===","?.1:0;tabs.push(t)}}}
+    if(tabs.length)for(let i=0;i<n;i++)isl.push(tabs)});
+  if(!isl.length)return null;
+  const a=g.a,its=isl.map(t=>({t,W:t.reduce((s,q)=>s+q.l+q.gap,0),D:Math.max(...t.map(q=>q.w))+2*g.cd+.1,P:t.reduce((s,q)=>s+2*seatsOf(q.l),0)}));
+  const rows=[];let cur=[],cw0=0;
+  its.forEach(it=>{if(cur.length&&cw0+a+it.W>g.AW+1e-6){rows.push(cur);cur=[];cw0=0}cur.push(it);cw0+=(cur.length>1?a:0)+it.W});
+  if(cur.length)rows.push(cur);
+  let y=g.Y0,s="",maxW=0;
+  rows.forEach(r=>{const tot=r.reduce((q,i)=>q+i.W,0)+(r.length-1)*a;maxW=Math.max(maxW,tot);let x=g.X0+(g.AW-tot)/2,h=0;
+    r.forEach(it=>{const ty=y+g.cd+.05;s+='<g class="grp">';let tx=x;
+      it.t.forEach(q=>{tx+=q.gap;const k=seatsOf(q.l);s+=R(tx+.02,ty,q.l-.04,q.w,"tb")+CH(tx,ty-g.cd+.02,q.l,k,g)+CH(tx,ty+q.w+.03,q.l,k,g);tx+=q.l});
+      s+="</g>";x+=it.W+a;h=Math.max(h,it.D)});y+=h+a});
+  const H=y-a-g.Y0,over=[];if(maxW>g.AW+1e-6)over.push("largeur");if(H>g.AD+1e-6)over.push("profondeur");
+  const n=its.reduce((q,i)=>q+i.P,0);
+  return{n,s,note:`${its.length} îlot(s) : ${its.map(i=>i.P).join(" + ")} = ${n}`+(over.length?` ⚠ dépasse en ${over.join(" et ")}`:"")};
+}
+
+function theatre(g){
+  const rp=g.cd+(g.rs??0.2),mx=Math.floor(g.AD/rp),per=Math.floor((g.AW-g.a)/g.cw);
+  if(mx<1||per<2)return small();const rows=g.rg?Math.min(g.rg,mx):mx;
+  const left=Math.ceil(per/2),ox=g.X0+(g.AW-per*g.cw-g.a)/2;let s="";
+  for(let r=0;r<rows;r++)for(let i=0;i<per;i++)s+=R(ox+i*g.cw+(i>=left?g.a:0)+.02,g.Y0+r*rp+.02,g.cw-.04,g.cd-.04,"ch");
+  return{n:rows*per,s,note:`${rows} rangs de ${per} chaises`+(g.rg>mx?` (maximum possible : ${mx})`:"")};
+}
+
+function classe(g){
+  const rp=g.tw+g.cd+(g.rs??0.3),mx=Math.floor(g.AD/rp),cols=Math.floor((g.AW-g.a)/g.tl),k=seatsOf(g.tl);
+  if(mx<1||cols<1)return small();const rows=g.rg?Math.min(g.rg,mx):mx;
+  const left=Math.ceil(cols/2),ox=g.X0+(g.AW-cols*g.tl-g.a)/2;let s="";
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    const x=ox+c*g.tl+(c>=left?g.a:0),y=g.Y0+r*rp;
+    s+="<g class=\"grp\">"+R(x+.02,y,g.tl-.04,g.tw,"tb");
+    s+=CH(x,y+g.tw+.03,g.tl,k,g);s+="</g>";
+  }
+  return{n:rows*cols*k,s,note:`${rows} rangs de ${cols} tables, ${k} place(s) par table`+(g.rg>mx?` (maximum possible : ${mx})`:"")};
+}
+
+function boardroom(g){
+  const e=g.cd+0.3,nL=Math.floor((g.AW-2*e)/g.tl);
+  if(nL<1||g.AD<g.tw+2*e)return small();
+  const nW=(g.tw<0.9&&g.AD>=2*g.tw+2*e)?2:1,TL=nL*g.tl,TW=nW*g.tw;
+  const tx=g.X0+(g.AW-TL)/2,ty=g.Y0+(g.AD-TW)/2;
+  let s=R(tx,ty,TL,TW,"tb"),per=Math.floor(TL/g.cw),ox=tx+(TL-per*g.cw)/2;
+  for(let i=0;i<per;i++){s+=R(ox+i*g.cw+.02,ty-g.cd,g.cw-.04,g.cd-.04,"ch")+R(ox+i*g.cw+.02,ty+TW+.04,g.cw-.04,g.cd-.04,"ch");}
+  s+=R(tx-g.cd,ty+(TW-g.cw)/2,g.cd-.04,g.cw-.04,"ch")+R(tx+TL+.04,ty+(TW-g.cw)/2,g.cd-.04,g.cw-.04,"ch");
+  return{n:2*per+2,s,note:`Table de ${nL*g.tl>=1?(TL).toFixed(1):0} m × ${TW.toFixed(1)} m`};
+}
+
+function ushape(g){
+  const nb=Math.floor(g.AW/g.tl),na=Math.floor((g.AD-g.tw)/g.tl),k=seatsOf(g.tl);
+  if(nb<3||na<1)return small();
+  const B=nb*g.tl,bc=Math.floor((B-2*g.tw-2*g.cd)/g.cw);
+  if(bc<1)return small(0,"Intérieur du U trop étroit");
+  const ox=g.X0+(g.AW-B)/2,yb=g.Y0+na*g.tl;let s="";
+  for(let c=0;c<nb;c++)s+=R(ox+c*g.tl+.02,yb,g.tl-.04,g.tw,"tb");
+  for(let j=0;j<na;j++){
+    s+=R(ox,g.Y0+j*g.tl+.02,g.tw,g.tl-.04,"tb")+R(ox+B-g.tw,g.Y0+j*g.tl+.02,g.tw,g.tl-.04,"tb");
+    for(let i=0;i<k;i++){const y=g.Y0+j*g.tl+(g.tl-k*g.cw)/2+i*g.cw+.02;
+      s+=R(ox+g.tw+.03,y,g.cd-.04,g.cw-.04,"ch")+R(ox+B-g.tw-g.cd+.01,y,g.cd-.04,g.cw-.04,"ch");}
+  }
+  const bx=ox+g.tw+g.cd+(B-2*g.tw-2*g.cd-bc*g.cw)/2;
+  for(let i=0;i<bc;i++)s+=R(bx+i*g.cw+.02,yb-g.cd,g.cw-.04,g.cd-.04,"ch");
+  return{n:2*na*k+bc,s,note:`Base de ${nb} tables, bras de ${na}`};
+}
+
+function perso(g){
+  const lines=$("cu").value.split("\n").map(s=>s.trim()).filter(Boolean);
+  const tb=t=>{const p=t.trim().toLowerCase().replace("×","x").split("x"),L=parseFloat(p[0]),W=p[1]?parseFloat(p[1]):60;return L>0&&W>0?{l:L/100,w:W/100}:null};
+  let rows=lines.map(l=>{const mm=l.match(/@\s*(\d+(?:[.,]\d+)?)\s*$/),r=(mm?l.replace(mm[0],""):l).split("|").map(gr=>{const p=gr.split(/([+,])/),o=[];for(let i=0;i<p.length;i+=2){const t=tb(p[i]);if(t){t.gap=i&&p[i-1]===","?.1:0;o.push(t)}}return o}).filter(gr=>gr.length);r.sp=mm?parseFloat(mm[1].replace(",","."))/100:null;return r}).filter(r=>r.length);
+  if(!rows.length)return null;
+  if(g.rg){const b=rows;rows=[];for(let i=0;i<g.rg;i++)rows.push(b[i%b.length])}
+  const gap=g.rs??0.3;let y=g.Y0,n=0,nt=0,maxW=0,s="",first=null;
+  rows.forEach(r=>{
+    const gw=r.map(gr=>gr.reduce((a,t)=>a+t.l+t.gap,0)),TW=gw.reduce((a,b)=>a+b,0)+(r.length-1)*g.a,cnt=[];maxW=Math.max(maxW,TW);
+    let x=g.X0+(g.AW-TW)/2,h=0;
+    r.forEach((gr,gi)=>{let tx=x,c=0;gr.forEach(t=>{tx+=t.gap;s+="<g class=\"grp\">";const k=seatsOf(t.l);
+      s+=R(tx+.02,y,t.l-.04,t.w,"tb");
+      s+=CH(tx,y+t.w+.03,t.l,k,g);
+      s+="</g>";n+=k;c+=k;nt++;h=Math.max(h,t.w);tx+=t.l});cnt.push(c);x+=gw[gi]+g.a});
+    if(!first)first=cnt;y+=h+g.cd+(r.sp??gap)});
+  const H=y-g.Y0-gap,over=[];if(maxW>g.AW+1e-6)over.push("largeur");if(H>g.AD+1e-6)over.push("profondeur");
+  return{n,s,note:`${rows.length} rang(s), 1er rang : ${first.join(" + ")} = ${first.reduce((a,b)=>a+b,0)}`+(over.length?` ⚠ dépasse en ${over.join(" et ")}`:"")};
+}
+
+const roomsData = {
+  opera: { L: 13, W: 10 },
+  bastille: { L: 10, W: 7 },
+  louvre: { L: 6, W: 5 },
+  concorde: { L: 8, W: 5 },
+  louvre_concorde: { L: 10, W: 7 },
+  veranda: { L: 6, W: 6 },
+  bercy: { L: 8, W: 5.5 },
+  luxemburg: { L: 8, W: 5 }
+};
+
+$("roomSelect").addEventListener("change", e=>{
+  const val = e.target.value;
+  if(val !== "custom" && roomsData[val]){
+    $("L").value = roomsData[val].L;
+    $("W").value = roomsData[val].W;
+    render();
+  }
+});
+
+["L", "W"].forEach(id => $(id).addEventListener("input", () => {
+  $("roomSelect").value = "custom";
+}));
+
+function render(){
+  const L=num("L"),W=num("W");
+  const [tlc,twc]=$("tt").value.split("x").map(Number);const vals={m:num("m")??30,fz:num("fz")??0,cw:num("cw"),cd:num("cd"),tl:tlc,tw:twc,a:num("a")};
+  const out=$("out");
+  if(!L||!W||!vals.cw||!vals.cd||!vals.tl||!vals.tw||!vals.a){out.innerHTML="";$("info").textContent="Remplissez tous les champs avec des valeurs supérieures à 0.";return}
+  const g={L,W,cw:vals.cw/100,cd:vals.cd/100,tl:vals.tl/100,tw:vals.tw/100,a:vals.a/100};
+  const m=(num("m")??0)/100,fz=(parseFloat($("fz").value)||0)/100;
+  const rsv=parseFloat($("rs").value);g.rs=isFinite(rsv)&&rsv>=0?rsv/100:null;g.rg=Math.floor(parseFloat($("rg").value))||0;g.X0=m;g.Y0=m+fz;g.AW=L-2*m;g.AD=W-2*m-fz;
+  $("info").innerHTML=`<strong style="color:var(--ink);font-size:1.15rem">Superficie totale : ${(L*W).toFixed(1).replace(".",",")} m²</strong><br>Salle de ${L} × ${W} m · surface utilisable après marges et zone avant : ${(g.AW*g.AD).toFixed(1).replace(".",",")} m²`;
+  if(g.AW<=0||g.AD<=0){out.innerHTML="";$("info").textContent="Les marges sont plus grandes que la salle.";return}
+  const cfgs=[["Théâtre",theatre(g)],["Classe",classe(g)],["Réunion (table unique)",boardroom(g)],["En U",ushape(g)],["Personnalisé",perso(g)],["Îlots en ligne",ilots(g)],["Îlots en bloc",ilotsBloc(g)]].filter(c=>c[1]);
+  const max=Math.max(...cfgs.map(c=>c[1].n));
+  G=g;S=[];out.innerHTML=cfgs.map(([t,r],idx)=>{
+    const best=r.n===max&&max>0;
+    const svg=`<svg viewBox="-0.2 -0.2 ${f(L+.4)} ${f(W+.4)}" role="img" aria-label="Plan ${t}"><rect class="room" x="0" y="0" width="${L}" height="${W}"/><text class="lbl" x="${f(L/2)}" y="0.55" text-anchor="middle">avant</text>${r.s}</svg>`;
+    S[idx]={t,svg};const sqm=r.n?` · ${(L*W/r.n).toFixed(1)} m² par personne`:"";
+    return `<div class="card${best?" best":""}" data-i="${idx}"><div class="head"><h2>${t}</h2><span class="n">${r.n}<small> pers.</small></span></div><div class="meta">${best?'<span class="tag">Capacité max</span> ':""}${r.note||""}${sqm}</div>${svg}<button class="ebtn" data-i="${idx}">Modifier la mise en place</button></div>`;
+  }).join("");
+}
+
+document.querySelectorAll("input,textarea").forEach(i=>i.addEventListener("input",render));
+let S=[],G=null,cur=0,sel=null,sels=[],multi=false,drag=null;
+document.querySelectorAll("select").forEach(s=>s.addEventListener("change",render));
+const E=$("edsvg"),NS="http://www.w3.org/2000/svg";
+const count=()=>{$("edn").textContent=E.querySelectorAll(".ch").length+" chaises"};
+const pick=(t,add)=>{if(!add){sels.forEach(x=>x.classList.remove("sel"));sels=[]}
+  if(t){const i=sels.indexOf(t);if(add&&i>=0){t.classList.remove("sel");sels.splice(i,1)}else{sels.push(t);t.classList.add("sel")}}
+  sel=sels[sels.length-1]||null};
+const topEl=el=>{while(el&&el.parentNode&&el.parentNode.tagName!=="svg")el=el.parentNode;return el&&el.parentNode&&el.parentNode.tagName==="svg"?el:null};
+const pt=e=>{const s=E.querySelector("svg"),p=s.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(s.getScreenCTM().inverse())};
+function setT(el){if(el._o===undefined)el._o=el.getAttribute("transform")||"";const b=el.getBBox();
+  el.setAttribute("transform",`translate(${f(el._x||0)} ${f(el._y||0)}) rotate(${el._r||0} ${f(b.x+b.width/2)} ${f(b.y+b.height/2)}) ${el._o}`)}
+function snapTo(el){const tb=el.matches(".tb")?el:el.querySelector(".tb");if(!tb)return;
+  const k=E.querySelector("svg").getScreenCTM().a,tol=.07*k,r=tb.getBoundingClientRect();let dx=0,dy=0,bx=tol,by=tol;
+  E.querySelectorAll(".tb").forEach(o=>{if(o===tb||el.contains(o))return;const q=o.getBoundingClientRect();
+    if(r.top<q.bottom-2&&r.bottom>q.top+2)for(const d of[q.left-r.right,q.right-r.left])if(Math.abs(d)<bx){bx=Math.abs(d);dx=d}
+    if(r.left<q.right-2&&r.right>q.left+2)for(const d of[q.top-r.bottom,q.bottom-r.top])if(Math.abs(d)<by){by=Math.abs(d);dy=d}});
+  if(dx||dy){el._x=(el._x||0)+dx/k;el._y=(el._y||0)+dy/k;setT(el)}}
+function rotAll(d=90){if(sels.length===1){sel._r=(((sel._r||0)+d)%360+360)%360;setT(sel);return}
+  const rd=d*Math.PI/180,co=Math.cos(rd),si=Math.sin(rd);
+  const cs=sels.map(x=>{const b=x.getBBox();return{el:x,x:b.x+b.width/2+(x._x||0),y:b.y+b.height/2+(x._y||0)}});
+  const px=cs.reduce((a,c)=>a+c.x,0)/cs.length,py=cs.reduce((a,c)=>a+c.y,0)/cs.length;
+  cs.forEach(c=>{const dx=c.x-px,dy=c.y-py;c.el._x=(c.el._x||0)+(px+dx*co-dy*si)-c.x;c.el._y=(c.el._y||0)+(py+dx*si+dy*co)-c.y;c.el._r=(((c.el._r||0)+d)%360+360)%360;setT(c.el)})}
+function grp(){if(sels.length<2)return;const g=document.createElementNS(NS,"g"),items=[...sels];g.setAttribute("class","grp");E.querySelector("svg").appendChild(g);items.forEach(x=>g.appendChild(x));pick(null);pick(g)}
+function ungrp(){const items=sels.filter(x=>x.classList.contains("grp"));pick(null);
+  items.forEach(gp=>{const t=gp.getAttribute("transform")||"";[...gp.children].forEach(c=>{const n=(t+" "+(c.getAttribute("transform")||"")).trim();if(n)c.setAttribute("transform",n);c._o=n;c._x=c._y=c._r=0;gp.before(c);pick(c,true)});gp.remove()})}
+function openEd(i){cur=i;sel=null;sels=[];$("edname").value="";$("edmsg").textContent="";$("edtt").value=$("tt").value;$("edt").textContent=S[i].t;E.innerHTML=S[i].svg;count();if(!$("ed").open)$("ed").showModal()}
+function add(kind){const room=E.querySelector(".room"),cx=+room.getAttribute("width")/2,cy=+room.getAttribute("height")/2;
+  let el;if(kind==="rond"){el=document.createElementNS(NS,"circle");el.setAttribute("cx",cx);el.setAttribute("cy",cy);el.setAttribute("r",G.dr?G.dr/2:0.6);el.setAttribute("class","tb")}
+  else if(kind==="tb"){const [a1,b1]=$("edtt").value.split("x").map(Number),l=a1/100,tw=b1/100,k=seatsOf(l),x=Math.round((cx-l/2)*20)/20,y=Math.round((cy-tw/2)*20)/20;
+    let h=R(x,y,l,tw,"tb")+CH(x,y+tw+.03,l,k,G);
+    el=document.createElementNS(NS,"g");el.setAttribute("class","grp");el.innerHTML=h}
+  else{const [a1,b1]=$("edtt").value.split("x").map(Number);const w=kind==="ch"?G.cw-.04:a1/100,h=kind==="ch"?G.cd-.04:b1/100;el=document.createElementNS(NS,"rect");
+    el.setAttribute("x",cx-w/2);el.setAttribute("y",cy-h/2);el.setAttribute("width",w);el.setAttribute("height",h);el.setAttribute("class",kind)}
+  E.querySelector("svg").appendChild(el);pick(el);count()}
+
+$("out").addEventListener("click",e=>{
+  const card=e.target.closest(".card");
+  if(card && card.dataset.i !== undefined) openEd(+card.dataset.i);
+});
+
+$("ed").addEventListener("click",e=>{const a=e.target.dataset.a;if(!a)return;
+  if(a==="close")$("ed").close();
+  else if(a==="reset"){if(S[cur])openEd(cur)}
+  else if(a==="ch"||a==="tb"||a==="rond")add(a);
+  else if(a==="save")saveP();else if(a==="dl")dl();else if(a==="png")png();else if(a==="pr")pr();
+  else if(a==="multi"){multi=!multi;e.target.setAttribute("aria-pressed",multi);e.target.style.borderColor=multi?"var(--acc)":""}
+  else if(a==="all"){pick(null);E.querySelectorAll("svg>.grp,svg>.ch,svg>.tb").forEach(x=>{if(x._o===undefined)setT(x);pick(x,true)})}
+  else if(!sel)return;
+  else if(a==="del"){sels.forEach(x=>x.remove());pick(null);count()}
+  else if(a==="rot")rotAll(90);else if(a==="rotl")rotAll(-15);else if(a==="rotr")rotAll(15);
+  else if(a==="dup"){const old=[...sels];pick(null);old.forEach(o=>{const c=o.cloneNode(true);c.classList.remove("sel");c._o=o._o;c._r=o._r;c._x=(o._x||0)+.3;c._y=(o._y||0)+.3;o.parentNode.appendChild(c);setT(c);pick(c,true)});count()}
+  else if(a==="grp")grp();else if(a==="ungrp")ungrp();});
+E.addEventListener("pointerdown",e=>{const t=topEl(e.target.closest(".ch,.tb,.grp")),add=e.shiftKey||multi;
+  if(!t){if(!add)pick(null);return}
+  if(!sels.includes(t)||add)pick(t,add);else sel=t;
+  if(!sels.length)return;
+  sels.forEach(x=>{if(x._o===undefined)setT(x)});
+  drag={p:pt(e),items:sels.map(x=>({el:x,x:x._x||0,y:x._y||0}))};E.setPointerCapture(e.pointerId)});
+E.addEventListener("pointermove",e=>{if(!drag)return;const q=pt(e),s=v=>Math.round(v*20)/20;
+  drag.items.forEach(i=>{i.el._x=s(i.x+q.x-drag.p.x);i.el._y=s(i.y+q.y-drag.p.y);setT(i.el)});
+  if(drag.items.length===1&&$("snap").checked)snapTo(drag.items[0].el)});
+E.addEventListener("pointerup",()=>{drag=null});
+document.addEventListener("keydown",e=>{if($("ed").open&&sel&&e.target.tagName!=="INPUT"&&(e.key==="Delete"||e.key==="Backspace")){sels.forEach(x=>x.remove());pick(null);count()}});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let mt;const msg=t=>{$("edmsg").textContent=t;clearTimeout(mt);mt=setTimeout(()=>{$("edmsg").textContent=""},7000)};
+const KEY="planSalle.v1";
+const loadS=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}};
+const storeS=a=>{try{localStorage.setItem(KEY,JSON.stringify(a));return true}catch(e){return false}};
+const cleanSvg=()=>{pick(null);return E.querySelector("svg").outerHTML};
+const nameOf=()=>$("edname").value.trim()||$("edt").textContent||"Mise en place";
+function drawSaves(){const a=loadS();$("saves").innerHTML=a.length?"<strong>Mes mises en place enregistrées</strong>"+a.map((x,i)=>`<span class="sv"><button data-o="${i}">${esc(x.name)}</button><button data-d="${i}" aria-label="Supprimer ${esc(x.name)}">×</button></span>`).join(""):""}
+function saveP(){const n=nameOf(),a=loadS().filter(x=>x.name!==n);a.push({name:n,svg:cleanSvg()});
+  if(storeS(a)){drawSaves();msg("Enregistré : "+n+". Vous le retrouvez en haut de la page, sur cet appareil.")}else{msg("Enregistrement impossible ici : le plan est téléchargé en fichier à la place.");dl()}}
+
+function triggerDownload(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function dl(){const n=nameOf(),info=G?`${G.L} × ${G.W} m, ${(+(G.L*G.W).toFixed(2)).toLocaleString("fr-FR")} m²`:"";
+  const html=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${esc(n)}</title><style>body{font-family:system-ui,sans-serif;margin:24px;color:#12343b}h1{font-size:1.3rem;margin:0}p{margin:4px 0 12px;color:#444}svg{width:100%;max-height:85vh}.room{fill:#fff;stroke:#12343b;stroke-width:.05}.ch{fill:#e0a458;stroke:#8a5a14;stroke-width:.01}.tb{fill:#12343b}.lbl{fill:#666;font-size:.45px}.pb{margin-bottom:12px}@media print{.pb{display:none}body{margin:10mm}}</style></head><body><button class="pb" onclick="print()">Imprimer</button><h1>${esc(n)}</h1><p>${esc($("edn").textContent)} · ${esc(info)} · ${new Date().toLocaleDateString("fr-FR")}</p>${cleanSvg()}</body></html>`;
+  const filename = (n.replace(/[^\wÀ-ÿ -]+/g,"").trim()||"mise-en-place")+".html";
+  triggerDownload(filename, new Blob([html], {type: "text/html;charset=utf-8"}));
+  msg("Fichier HTML téléchargé.");
+}
+
+function pr(){pick(null);try{window.print()}catch(e){}msg("Si l’impression ne s’ouvre pas, utilisez Télécharger puis imprimez le fichier.")}
+
+$("saves").addEventListener("click",e=>{const o=e.target.dataset.o,d=e.target.dataset.d,a=loadS();
+  if(o!=null&&a[o]){cur=-1;sel=null;sels=[];$("edt").textContent=a[o].name;$("edname").value=a[o].name;$("edmsg").textContent="";E.innerHTML=a[o].svg;count();if(!$("ed").open)$("ed").showModal()}
+  else if(d!=null){a.splice(+d,1);storeS(a);drawSaves()}});
+
+async function png(){pick(null);const svg=E.querySelector("svg"),vb=svg.viewBox.baseVal,w=Math.round(vb.width*60),h=Math.round(vb.height*60),n=nameOf();
+  const css=".room{fill:#fff;stroke:#12343b;stroke-width:.05}.ch{fill:#e0a458;stroke:#8a5a14;stroke-width:.01}.tb{fill:#12343b}.lbl{fill:#666;font-size:.45px}";
+  const x=svg.outerHTML.replace("<svg",`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"`).replace(">",`><style>${css}</style>`);
+  try{const img=new Image();img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(x);await img.decode();
+    const cv=document.createElement("canvas");cv.width=w;cv.height=h;const cx=cv.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,w,h);cx.drawImage(img,0,0,w,h);
+    const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
+    const filename = (n.replace(/[^\wÀ-ÿ -]+/g,"").trim()||"mise-en-place")+".png";
+    triggerDownload(filename, blob);
+    msg("Image PNG téléchargée.");
+  }
+  catch(e){msg("Création de l’image impossible. Faites une capture d’écran du plan.")}}
+
+$("edfile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;
+  try{const t=await f.text(),m=t.match(/<svg[\s\S]*<\/svg>/);if(!m)throw 0;cur=-1;sel=null;sels=[];E.innerHTML=m[0];$("edt").textContent=f.name.replace(/\.html$/,"");$("edname").value=$("edt").textContent;count();msg("Fichier ouvert.")}
+  catch(x){msg("Fichier non reconnu : ouvrez un plan téléchargé avec cet outil.")}e.target.value=""});
+
+drawSaves();
+render();
+</script>
+</body>
+</html>
